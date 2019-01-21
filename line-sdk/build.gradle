@@ -1,5 +1,11 @@
 apply plugin: 'com.android.library'
 
+ext {
+    PUBLISH_GROUP_ID = 'com.linecorp'
+    PUBLISH_ARTIFACT_ID = 'linesdk'
+    PUBLISH_VERSION = '5.0.1'
+}
+
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
@@ -160,3 +166,5 @@ task javadoc_internal(type: Javadoc) {
         links = javadocParams.externalLinks
     }
 }
+
+apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
