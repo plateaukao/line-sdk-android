@@ -78,7 +78,7 @@ class LineSdkWrapper {
         }
 
         val botFriendShipStatus =
-            BotFriendShipStatus(lineApiClient.friendshipStatus.responseData.isFriend)
+            BotFriendshipStatus(lineApiClient.friendshipStatus.responseData.isFriend)
         CallbackPayload(
             identifier,
             gson.toJson(botFriendShipStatus)

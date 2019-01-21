@@ -11,15 +11,18 @@ data class CallbackPayload(
     fun sendMessageOk() =
         UnityPlayer.UnitySendMessage(
             KEY_LINE_SDK,
-            NAME_API_OK, generatePayloadJson())
+            NAME_API_OK,
+            generatePayloadJson()
+        )
 
     fun sendMessageError() =
         UnityPlayer.UnitySendMessage(
             KEY_LINE_SDK,
-            NAME_API_ERROR, generatePayloadJson())
+            NAME_API_ERROR,
+            generatePayloadJson()
+        )
 
     private fun generatePayloadJson(): String = gson.toJson(this)
-
 
     companion object {
         private val gson: Gson = Gson()

@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.linecorp.linesdk.auth.LineLoginResult
 
 
-class AccessTokenForUnity(
+data class AccessTokenForUnity(
     @SerializedName("access_token")
     val accessToken: String,
     @SerializedName("expires_in")
