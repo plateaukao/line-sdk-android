@@ -9,13 +9,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.linecorp.linesdk.dialog.SendMessageDialog;
 import com.linecorp.linesdktest.settings.TestSetting;
+import com.linecorp.linesdktest.util.FlexMessageGenerator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ApisFragment extends BaseApisFragment {
+    private final FlexMessageGenerator flexMessageGenerator = new FlexMessageGenerator();
+
     @Nullable
     @BindView(R.id.log) TextView logView;
 
@@ -69,6 +73,13 @@ public class ApisFragment extends BaseApisFragment {
     @OnClick(R.id.get_current_token_btn)
     void getCurrentToken() {
         startApiAsyncTask("getCurrentToken", () -> lineApiClient.getCurrentAccessToken());
+    }
+
+    @OnClick(R.id.send_message)
+    void sendMessage() {
+        SendMessageDialog dialog = new SendMessageDialog(getContext(), lineApiClient);
+        dialog.setMessage(flexMessageGenerator.createFlexCarouselContainerMessage());
+        dialog.show();
     }
 
     @Override

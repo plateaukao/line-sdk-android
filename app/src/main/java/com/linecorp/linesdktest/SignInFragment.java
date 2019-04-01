@@ -106,9 +106,6 @@ public class SignInFragment extends Fragment {
     private void buildScopeCheckBoxes() {
         final List<Scope> scopes = (BuildConfig.INCLUDE_INTERNAL_API_TEST)?
             Arrays.asList(Scope.PROFILE,
-                    Scope.FRIEND,
-                    Scope.GROUP,
-                    Scope.MESSAGE,
                     Scope.OPENID_CONNECT,
                     Scope.OC_EMAIL,
                     Scope.OC_PHONE_NUMBER,
@@ -117,7 +114,11 @@ public class SignInFragment extends Fragment {
                     Scope.OC_ADDRESS,
                     Scope.OC_REAL_NAME)
         :
-            Arrays.asList(Scope.PROFILE, Scope.OPENID_CONNECT);
+            Arrays.asList(Scope.PROFILE,
+                    Scope.OPENID_CONNECT,
+                    Scope.FRIEND,
+                    Scope.GROUP,
+                    Scope.MESSAGE);
 
 
         final FragmentActivity activity = getActivity();
