@@ -11,9 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.linecorp.linesdk.R;
@@ -22,8 +20,8 @@ import com.linecorp.linesdk.dialog.internal.SendMessageContract;
 import com.linecorp.linesdk.dialog.internal.SendMessagePresenter;
 import com.linecorp.linesdk.dialog.internal.SendMessageTargetPagerAdapter;
 import com.linecorp.linesdk.dialog.internal.TargetUser;
+import com.linecorp.linesdk.dialog.internal.UserThumbnailView;
 import com.linecorp.linesdk.message.MessageData;
-import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -42,7 +40,7 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
 
     private MessageData message;
     private SendMessageTargetPagerAdapter sendMessageTargetAdapter;
-    private Map<String, View> thumbnailViewCache = new HashMap<>();
+    private Map<String, View> targetUserViewCacheMap = new HashMap<>();
 
     private LinearLayout.LayoutParams layoutParams =
             new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -58,21 +56,6 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
         super(context, R.style.DialogTheme);
         presenter = new SendMessagePresenter(lineApiClient, this);
         sendMessageTargetAdapter = new SendMessageTargetPagerAdapter(context, presenter, presenter);
-    }
-
-    @NonNull
-    private View createSelectedTargetThumbnailView(TargetUser targetUser) {
-        View thumbnailView = getLayoutInflater().inflate(R.layout.target_user_thumbnail, null);
-        thumbnailView.setOnClickListener(view -> presenter.removeTargetUser(targetUser));
-
-        TextView targetUserName = thumbnailView.findViewById(R.id.textViewDisplayName);
-        targetUserName.setText(targetUser.getDisplayName());
-
-        ImageView imageView = thumbnailView.findViewById(R.id.imageViewTargetUser);
-        int thumbnailResId = (targetUser.getType() == TargetUser.Type.FRIEND) ? R.drawable.friend_thumbnail : R.drawable.group_thumbnail;
-        Picasso.get().load(targetUser.getPictureUri()).placeholder(thumbnailResId).into(imageView);
-
-        return thumbnailView;
     }
 
     @Override
@@ -111,30 +94,37 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
 
     @Override
     public void dismiss() {
-        presenter.destroy();
+        presenter.release();
         super.dismiss();
     }
 
     @Override
     public void onTargetUserRemoved(TargetUser targetUser) {
-        View thumbnailView = thumbnailViewCache.get(targetUser.getId());
-        linearLayoutTargetUser.removeView(thumbnailView);
-        sendMessageTargetAdapter.removeTargetUser(targetUser);
+        View targetUserView = targetUserViewCacheMap.get(targetUser.getId());
+        linearLayoutTargetUser.removeView(targetUserView);
+        sendMessageTargetAdapter.unSelect(targetUser);
         updateConfirmButtonLabel();
     }
 
     @Override
     public void onTargetUserAdded(TargetUser targetUser) {
-        if (thumbnailViewCache.get(targetUser.getId()) == null) {
-            View thumbnailView = createSelectedTargetThumbnailView(targetUser);
-            thumbnailViewCache.put(targetUser.getId(), thumbnailView);
+        if (targetUserViewCacheMap.get(targetUser.getId()) == null) {
+            targetUserViewCacheMap.put(targetUser.getId(), createUserThumbnailView(targetUser));
         }
 
-        View thumbnailView = thumbnailViewCache.get(targetUser.getId());
-        linearLayoutTargetUser.addView(thumbnailView, layoutParams);
+        View targetUserView = targetUserViewCacheMap.get(targetUser.getId());
+        linearLayoutTargetUser.addView(targetUserView, layoutParams);
         // scroll to right
         horizontalScrollView.post(() -> horizontalScrollView.fullScroll(View.FOCUS_RIGHT));
         updateConfirmButtonLabel();
+    }
+
+    @NonNull
+    private UserThumbnailView createUserThumbnailView(TargetUser targetUser) {
+        UserThumbnailView userThumbnailView = new UserThumbnailView(getContext());
+        userThumbnailView.setOnClickListener(view -> presenter.removeTargetUser(targetUser));
+        userThumbnailView.setTargetUser(targetUser);
+        return userThumbnailView;
     }
 
     @Override

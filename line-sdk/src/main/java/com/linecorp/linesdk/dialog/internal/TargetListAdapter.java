@@ -77,7 +77,7 @@ public class TargetListAdapter extends RecyclerView.Adapter<TargetListAdapter.Ta
         this.externalListener = externalListener;
     }
 
-    public void filter(String text) {
+    public int filter(String text) {
         queryString = text;
         targetList.clear();
         if(text.isEmpty()){
@@ -92,6 +92,7 @@ public class TargetListAdapter extends RecyclerView.Adapter<TargetListAdapter.Ta
         }
 
         notifyDataSetChanged();
+        return targetList.size();
     }
 
     @Override
@@ -111,7 +112,7 @@ public class TargetListAdapter extends RecyclerView.Adapter<TargetListAdapter.Ta
         return targetList.size();
     }
 
-    public void unSelectUser(TargetUser user) {
+    public void unSelect(TargetUser user) {
         for (int index = 0; index < targetList.size(); index++) {
             TargetUser targetUser = targetList.get(index);
             if (targetUser.getId().equals(user.getId())) {

@@ -63,7 +63,7 @@ public class SendMessagePresenter implements SendMessageContract.Presenter, Targ
     }
 
     @Override
-    public void destroy() {
+    public void release() {
         for (AsyncTask task : asyncTaskList) {
             task.cancel(true);
         }

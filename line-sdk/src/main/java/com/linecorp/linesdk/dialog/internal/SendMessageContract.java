@@ -7,7 +7,7 @@ public interface SendMessageContract {
         void removeTargetUser(TargetUser targetUser);
         void addTargetUser(TargetUser targetUser);
         void sendMessage(MessageData messageData);
-        void destroy();
+        void release();
 
         int getTargetUserListSize();
 
