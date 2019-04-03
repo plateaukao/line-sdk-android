@@ -14,6 +14,7 @@
         <item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
         <item name="android:activityCloseExitAnimation">@android:anim/fade_out</item>
     </style>
+
     <style name="DialogTheme" parent="android:Theme.Dialog">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">fill_parent</item>
@@ -30,6 +31,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:ellipsize">end</item>
     </style>
+
     <style name="CursorStyle" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorControlActivated">@android:color/black</item>
     </style>
