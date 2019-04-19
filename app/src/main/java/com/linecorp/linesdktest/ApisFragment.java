@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.linecorp.linesdk.dialog.SendMessageDialog;
 import com.linecorp.linesdktest.settings.TestSetting;
@@ -77,9 +78,13 @@ public class ApisFragment extends BaseApisFragment {
 
     @OnClick(R.id.send_message)
     void sendMessage() {
-        SendMessageDialog dialog = new SendMessageDialog(getContext(), lineApiClient);
-        dialog.setMessage(flexMessageGenerator.createFlexCarouselContainerMessage());
-        dialog.show();
+        SendMessageDialog sendMessageDialog = new SendMessageDialog(getContext(), lineApiClient);
+        sendMessageDialog.setMessageData(flexMessageGenerator.createFlexCarouselContainerMessage());
+        sendMessageDialog.setOnSendListener(
+                dialog -> Toast.makeText(getContext(), "Message is sent.", Toast.LENGTH_LONG).show());
+        sendMessageDialog.setOnCancelListener(
+                dialog -> Toast.makeText(getContext(), "Sending message is canceled.", Toast.LENGTH_LONG).show());
+        sendMessageDialog.show();
     }
 
     @Override

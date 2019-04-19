@@ -3,6 +3,7 @@ package com.linecorp.linesdk.dialog.internal;
 import com.linecorp.linesdk.api.LineApiClient;
 import com.linecorp.linesdk.message.MessageData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SendMessageTask extends android.os.AsyncTask<List<TargetUser>, Void, Void> {
@@ -16,9 +17,11 @@ public class SendMessageTask extends android.os.AsyncTask<List<TargetUser>, Void
 
     @Override
     protected Void doInBackground(List<TargetUser>... lists) {
+        List<String> idList = new ArrayList<>();
         for (TargetUser targetUser : lists[0]) {
-            lineApiClient.sendMessage(targetUser.getId(), messageDataList);
+            idList.add(targetUser.getId());
         }
+        lineApiClient.sendMessageToMultipleUsers(idList, messageDataList);
         return null;
     }
 }

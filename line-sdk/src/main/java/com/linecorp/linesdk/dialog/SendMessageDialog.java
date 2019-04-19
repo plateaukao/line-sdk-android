@@ -1,11 +1,13 @@
 package com.linecorp.linesdk.dialog;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,9 +30,20 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * A customized dialog that users can pick friends or groups to send messages
+ * A subclass of Dialog that shows the friend and group list for user to pick and send the
+ * passed-in messageData. You can register a listener through
+ * {@link #setOnSendListener(OnSendListener)} know whether the messageData is sent or not.
+ * <pre>
+ * MessageData messageData = new TextMessage("Default Text Message", new MessageSender(...));
+ *
+ * SendMessageDialog sendMessageDialog = new SendMessageDialog(context, lineApiClient);
+ * sendMessageDialog.setMessageData(messageData);
+ * sendMessageDialog.setOnSendListener(dialog -> {...});
+ * sendMessageDialog.setOnCancelListener(dialog -> {...});
+ * sendMessageDialog.show();
+ * </pre>
  */
-public class SendMessageDialog extends AlertDialog implements SendMessageContract.View {
+public class SendMessageDialog extends Dialog implements SendMessageContract.View {
 
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -38,9 +51,11 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
     private LinearLayout linearLayoutTargetUser;
     private HorizontalScrollView horizontalScrollView;
 
-    private MessageData message;
+    private MessageData messageData;
     private SendMessageTargetPagerAdapter sendMessageTargetAdapter;
     private Map<String, View> targetUserViewCacheMap = new HashMap<>();
+
+    private OnSendListener onSendListener;
 
     private LinearLayout.LayoutParams layoutParams =
             new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -48,8 +63,8 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
 
     private SendMessagePresenter presenter;
 
-    public void setMessage(MessageData message) {
-        this.message = message;
+    public void setMessageData(MessageData messageData) {
+        this.messageData = messageData;
     }
 
     public SendMessageDialog(@NonNull Context context, @NonNull LineApiClient lineApiClient) {
@@ -88,7 +103,10 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
     }
 
     private View.OnClickListener confirmClickListener = view -> {
-        presenter.sendMessage(message);
+        presenter.sendMessage(messageData);
+        if (onSendListener != null) {
+            onSendListener.onSend(this);
+        }
         dismiss();
     };
 
@@ -133,6 +151,33 @@ public class SendMessageDialog extends AlertDialog implements SendMessageContrac
                 String.format(Locale.getDefault(), "You can only select up to %1$d.", count),
                 Toast.LENGTH_LONG)
                 .show();
+    }
+
+    /**
+     * Set a listener to be invoked when the {@link #messageData} is sent.
+     *
+     * @param listener The {@link OnSendListener} to use.
+     */
+    public void setOnSendListener(@Nullable OnSendListener listener) {
+        if (onSendListener != null) {
+            throw new IllegalStateException(
+                    "OnSendListener is already taken and can not be replaced.");
+        }
+        onSendListener = listener;
+    }
+
+    /**
+     * Interface used to allow the creator of a dialog to run some code when the
+     * dialog does send message to friends or groups.
+     */
+    public interface OnSendListener {
+        /**
+         * Called by the given <i>dialog</i> when the dialog sends message to selected friends
+         * and groups.
+         *
+         * @param dialog The dialog that send the message data will be passed into the method
+         */
+        void onSend(DialogInterface dialog);
     }
 
     private void updateConfirmButtonLabel() {
