@@ -285,6 +285,10 @@ import static com.linecorp.linesdk.utils.UriUtils.buildParams;
             friendshipStatusChanged = Boolean.parseBoolean(friendshipStatusChangedStr);
         }
 
+        if ("not_login".equals(resultDataUri.getQueryParameter("error"))) {
+            return Result.createAsLineNotLoginError();
+        }
+
         return !TextUtils.isEmpty(requestToken)
                 ? Result.createAsSuccess(requestToken, friendshipStatusChanged)
                 : Result.createAsAuthenticationAgentError(
@@ -352,12 +356,29 @@ import static com.linecorp.linesdk.utils.UriUtils.buildParams;
                     errorMessage);
         }
 
+        @VisibleForTesting
+        @NonNull
+        static Result createAsLineNotLoginError() {
+            return new Result(
+                    null /* requestToken */,
+                    null, /* friendshipStatusChanged */
+                    null /* serverErrorCode */,
+                    null /* serverErrorDescription */,
+                    null);
+        }
+
         boolean isSuccess() {
             return !TextUtils.isEmpty(requestToken);
         }
 
         boolean isAuthenticationAgentError() {
-            return TextUtils.isEmpty(internalErrorMessage) && !isSuccess();
+            return !isSuccess() &&
+                           !TextUtils.isEmpty(serverErrorCode) &&
+                           TextUtils.isEmpty(internalErrorMessage);
+        }
+
+        boolean isInternalError() {
+            return !TextUtils.isEmpty(internalErrorMessage) && !isSuccess();
         }
 
         private void checkRequestToken() {

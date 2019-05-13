@@ -175,13 +175,16 @@ import java.util.List;
                 browserAuthenticationApi.getAuthenticationResultFrom(intent);
         if (!authResult.isSuccess()) {
             authenticationStatus.authenticationIntentHandled();
+
+            LineApiResponseCode responseCode =
+                    authResult.isAuthenticationAgentError()
+                            ? LineApiResponseCode.AUTHENTICATION_AGENT_ERROR
+                            : authResult.isInternalError() ?
+                                      LineApiResponseCode.INTERNAL_ERROR :
+                                      LineApiResponseCode.LINE_NOT_LOGIN;
+
             activity.onAuthenticationFinished(
-                    new LineLoginResult(
-                            authResult.isAuthenticationAgentError()
-                                    ? LineApiResponseCode.AUTHENTICATION_AGENT_ERROR
-                                    : LineApiResponseCode.INTERNAL_ERROR,
-                            authResult.getLineApiError()
-                    ));
+                    new LineLoginResult(responseCode, authResult.getLineApiError()));
             return;
         }
         new AccessTokenRequestTask().execute(authResult);

@@ -27,5 +27,9 @@ public enum LineApiResponseCode {
     /**
      * An internal error occurred.
      */
-    INTERNAL_ERROR
+    INTERNAL_ERROR,
+    /**
+     * Line is not login yet.
+     */
+    LINE_NOT_LOGIN
 }
