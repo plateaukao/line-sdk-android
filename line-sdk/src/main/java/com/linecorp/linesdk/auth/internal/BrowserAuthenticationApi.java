@@ -162,6 +162,9 @@ import static com.linecorp.linesdk.utils.UriUtils.buildParams;
                 "returnUri", returnUri,
                 "loginChannelId", config.getChannelId()
         );
+        if (params.getUILocale() != null) {
+            loginQueryParams.put("ui_locales", params.getUILocale().toString());
+        }
         final Uri loginUri = appendQueryParams(config.getWebLoginPageUrl(), loginQueryParams);
         return loginUri;
     }
@@ -180,8 +183,8 @@ import static com.linecorp.linesdk.utils.UriUtils.buildParams;
      * If the following conditions are satisfied, this returns an intent to launch LINE
      * application. Otherwise returns an intent to launch an application other than LINE
      * application such as browser.
-     * - LINE Application is installed.
-     * - LINE Application version is 6.9.0 or more.
+     * - LINE application is installed.
+     * - LINE application version is 6.9.0 or more.
      * (LINE auto login feature is available before 6.9.0 but "scope" and "otpId" are not available
      * on the versions.)
      * - The method parameter value of 'isLineAppAuthDisabled' is false.
