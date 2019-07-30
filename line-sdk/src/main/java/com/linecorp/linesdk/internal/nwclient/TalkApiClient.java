@@ -23,6 +23,7 @@ import com.linecorp.linesdk.internal.nwclient.core.ChannelServiceHttpClient;
 import com.linecorp.linesdk.internal.nwclient.core.ResponseDataParser;
 import com.linecorp.linesdk.message.MessageData;
 import com.linecorp.linesdk.message.MessageSendRequest;
+import com.linecorp.linesdk.message.OttRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,9 +55,6 @@ public class TalkApiClient {
             new FriendshipStatusParser();
     private static final ResponseDataParser<GetFriendsResponse> FRIENDS_PARSER = new FriendsParser();
     private static final ResponseDataParser<GetGroupsResponse> GROUP_PARSER = new GroupParser();
-    private static final ResponseDataParser<String> STRING_PARSER = new StringParser();
-    private static final ResponseDataParser<List<SendMessageResponse>> SENDMESSAGE_PARSER =
-            new MultiSendResponseParser();
 
     @NonNull
     private final Uri apiBaseUrl;
@@ -195,15 +193,12 @@ public class TalkApiClient {
     @NonNull
     public LineApiResponse<String> sendMessage(
             @NonNull InternalAccessToken accessToken,
-            @NonNull String receiverId,
+            @NonNull String targetUserId,
             @NonNull List<MessageData> messages
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "send");
-
-        MessageSendRequest messageSendRequest = new MessageSendRequest(receiverId, messages);
         String postData;
         try {
-            postData = messageSendRequest.toJsonObject().toString();
+            postData = MessageSendRequest.createSingleUserType(targetUserId, messages).toJsonString();
         } catch (JSONException e) {
             return LineApiResponse.createAsError(
                     LineApiResponseCode.INTERNAL_ERROR,
@@ -211,24 +206,51 @@ public class TalkApiClient {
         }
 
         return httpClient.postWithJson(
-                uri,
+                buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "send"),
                 buildRequestHeaders(accessToken),
                 postData,
-                STRING_PARSER);
+                new StringParser("status"));
     }
 
     @NonNull
     public LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
             @NonNull InternalAccessToken accessToken,
-            @NonNull List<String> receiverIds,
+            @NonNull List<String> targetUserIds,
             @NonNull List<MessageData> messages
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "multisend");
+        return sendMessageToMultipleUsers(accessToken, targetUserIds, messages, false);
+    }
 
-        MessageSendRequest messageSendRequest = new MessageSendRequest(receiverIds, messages);
+    @NonNull
+    public LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
+            @NonNull InternalAccessToken accessToken,
+            @NonNull List<String> targetUserIds,
+            @NonNull List<MessageData> messages,
+            boolean isOttUsed
+    ) {
+        if (isOttUsed) {
+            LineApiResponse<String> ottResponse = getOtt(accessToken, targetUserIds);
+            if (ottResponse.isSuccess()) {
+                return sendMessageToMultipleUsersUsingOtt(accessToken, ottResponse.getResponseData(), messages);
+            } else {
+                return LineApiResponse.createAsError(
+                        ottResponse.getResponseCode(),
+                        ottResponse.getErrorData());
+            }
+        } else {
+            return sendMessageToMultipleUsersUsingUserIds(accessToken, targetUserIds, messages);
+        }
+    }
+
+    @NonNull
+    private LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsersUsingUserIds(
+            @NonNull InternalAccessToken accessToken,
+            @NonNull List<String> targetUserIds,
+            @NonNull List<MessageData> messages
+    ) {
         String postData;
         try {
-            postData = messageSendRequest.toJsonObject().toString();
+            postData = MessageSendRequest.createMultiUsersType(targetUserIds, messages).toJsonString();
         } catch (JSONException e) {
             return LineApiResponse.createAsError(
                     LineApiResponseCode.INTERNAL_ERROR,
@@ -236,10 +258,54 @@ public class TalkApiClient {
         }
 
         return httpClient.postWithJson(
-                uri,
+                buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "multisend"),
                 buildRequestHeaders(accessToken),
                 postData,
-                SENDMESSAGE_PARSER);
+                new MultiSendResponseParser());
+    }
+
+    @VisibleForTesting
+    @NonNull
+    protected LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsersUsingOtt(
+            @NonNull InternalAccessToken accessToken,
+            @NonNull String ott,
+            @NonNull List<MessageData> messages
+    ) {
+        String postData;
+        try {
+            postData = MessageSendRequest.createOttType(ott, messages).toJsonString();
+        } catch (JSONException e) {
+            return LineApiResponse.createAsError(
+                    LineApiResponseCode.INTERNAL_ERROR,
+                    new LineApiError(e));
+        }
+
+        return httpClient.postWithJson(
+                buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "multisend?type=ott"),
+                buildRequestHeaders(accessToken),
+                postData,
+                new MultiSendResponseParser());
+    }
+
+    @NonNull
+    private LineApiResponse<String> getOtt(
+            @NonNull InternalAccessToken accessToken,
+            @NonNull List<String> targetUserIds
+    ) {
+        String postData;
+        try {
+            postData = new OttRequest(targetUserIds).toJsonString();
+        } catch (JSONException e) {
+            return LineApiResponse.createAsError(
+                    LineApiResponseCode.INTERNAL_ERROR,
+                    new LineApiError(e));
+        }
+
+        return httpClient.postWithJson(
+                buildUri(apiBaseUrl, BASE_PATH_MESSAGE_API, "ott"),
+                buildRequestHeaders(accessToken),
+                postData,
+                new StringParser("token"));
     }
 
     @VisibleForTesting
@@ -310,11 +376,17 @@ public class TalkApiClient {
 
     @VisibleForTesting
     static class StringParser extends JsonToObjectBaseResponseParser<String> {
+
+        private String jsonKey;
+
+        StringParser(String jsonKey) {
+            this.jsonKey = jsonKey;
+        }
+
         @NonNull
         @Override
         String parseJsonToObject(@NonNull JSONObject jsonObject) throws JSONException {
-            String status = jsonObject.getString("status");
-            return status;
+            return jsonObject.getString(jsonKey);
         }
     }
 
@@ -324,9 +396,12 @@ public class TalkApiClient {
         @Override
         List<SendMessageResponse> parseJsonToObject(@NonNull JSONObject jsonObject) throws JSONException {
             List<SendMessageResponse> sendMessageResponses = new ArrayList<>();
-            JSONArray resultArray = jsonObject.getJSONArray("results");
-            for (int i = 0; i < resultArray.length(); i++) {
-                sendMessageResponses.add(SendMessageResponse.fromJsonObject(resultArray.getJSONObject(i)));
+            String jsonKeyResults = "results";
+            if (jsonObject.has(jsonKeyResults)) {
+                JSONArray resultArray = jsonObject.getJSONArray(jsonKeyResults);
+                for (int i = 0; i < resultArray.length(); i++) {
+                    sendMessageResponses.add(SendMessageResponse.fromJsonObject(resultArray.getJSONObject(i)));
+                }
             }
             return sendMessageResponses;
         }

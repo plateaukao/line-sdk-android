@@ -225,9 +225,23 @@ public class LineApiClientImpl implements LineApiClient {
     @TokenAutoRefresh
     @NonNull
     public LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
-            @NonNull List<String> targetUserIds, @NonNull List<MessageData> messages) {
+            @NonNull List<String> targetUserIds,
+            @NonNull List<MessageData> messages
+    ) {
+        return sendMessageToMultipleUsers(targetUserIds, messages, false);
+    }
+
+    @Override
+    @TokenAutoRefresh
+    @NonNull
+    public LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
+            @NonNull List<String> targetUserIds,
+            @NonNull List<MessageData> messages,
+            boolean isOttUsed
+    ) {
         return callWithAccessToken(
-                accessToken -> talkApiClient.sendMessageToMultipleUsers(accessToken, targetUserIds, messages)
+                accessToken -> talkApiClient.sendMessageToMultipleUsers(
+                        accessToken, targetUserIds, messages, isOttUsed)
         );
     }
 
