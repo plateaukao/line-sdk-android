@@ -104,10 +104,6 @@ public class SendMessageDialog extends Dialog implements SendMessageContract.Vie
 
     private View.OnClickListener confirmClickListener = view -> {
         presenter.sendMessage(messageData);
-        if (onSendListener != null) {
-            onSendListener.onSend(this);
-        }
-        dismiss();
     };
 
     @Override
@@ -153,6 +149,22 @@ public class SendMessageDialog extends Dialog implements SendMessageContract.Vie
                 .show();
     }
 
+    @Override
+    public void onSendMessageSuccess() {
+        if (onSendListener != null) {
+            onSendListener.onSendSuccess(this);
+        }
+        dismiss();
+    }
+
+    @Override
+    public void onSendMessageFailure() {
+        if (onSendListener != null) {
+            onSendListener.onSendFailure(this);
+        }
+        dismiss();
+    }
+
     /**
      * Set a listener to be invoked when the {@link #messageData} is sent.
      *
@@ -173,11 +185,19 @@ public class SendMessageDialog extends Dialog implements SendMessageContract.Vie
     public interface OnSendListener {
         /**
          * Called by the given <i>dialog</i> when the dialog sends message to selected friends
-         * and groups.
+         * and groups <i>successfully</i>.
          *
          * @param dialog The dialog that send the message data will be passed into the method
          */
-        void onSend(DialogInterface dialog);
+        void onSendSuccess(DialogInterface dialog);
+
+        /**
+         * Called by the given <i>dialog</i> when the dialog sends message to selected friends
+         * and groups <i>unsuccessfully</i>.
+         *
+         * @param dialog The dialog that send the message data will be passed into the method
+         */
+        void onSendFailure(DialogInterface dialog);
     }
 
     private void updateConfirmButtonLabel() {

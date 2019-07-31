@@ -3,7 +3,8 @@ package com.linecorp.linesdk.message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import org.json.JSONArray;
+import com.linecorp.linesdk.utils.JSONUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -128,30 +129,10 @@ public class MessageSendRequest {
     @NonNull
     private JSONObject toJsonObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();
-        if (targetUserId != null) {
-            jsonObject.put("to", targetUserId);
-        }
-
-        if (targetUserIds != null) {
-            JSONArray toArray = new JSONArray();
-            for (String id : targetUserIds) {
-                toArray.put(id);
-            }
-            jsonObject.put("to", toArray);
-        }
-
-        if (ott != null) {
-            jsonObject.put("token", ott);
-        }
-
-        if (messages != null) {
-            JSONArray messageArray = new JSONArray();
-            for (MessageData message : messages) {
-                messageArray.put(message.toJsonObject());
-            }
-            jsonObject.put("messages", messageArray);
-        }
-
+        JSONUtils.put(jsonObject, "to", targetUserId);
+        JSONUtils.putArray(jsonObject, "to", targetUserIds);
+        JSONUtils.put(jsonObject, "token", ott);
+        JSONUtils.putArray(jsonObject, "messages", messages);
         return jsonObject;
     }
 }

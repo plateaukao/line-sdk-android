@@ -8,8 +8,8 @@ import com.linecorp.linesdk.message.MessageData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SendMessagePresenter implements SendMessageContract.Presenter, TargetListAdapter.OnSelectedChangeListener  {
-    SendMessageContract.View view;
+public class SendMessagePresenter implements SendMessageContract.Presenter, TargetListAdapter.OnSelectedChangeListener {
+    private SendMessageContract.View view;
 
     private LineApiClient lineApiClient;
 
@@ -17,7 +17,18 @@ public class SendMessagePresenter implements SendMessageContract.Presenter, Targ
 
     private List<AsyncTask> asyncTaskList = new ArrayList<>();
 
-    private static final int  MAX_TARGET_SIZE = 10;
+    private static final int MAX_TARGET_SIZE = 10;
+    private ApiStatusListener apiStatusListener = new ApiStatusListener() {
+        @Override
+        public void onSuccess() {
+            view.onSendMessageSuccess();
+        }
+
+        @Override
+        public void onFailure() {
+            view.onSendMessageFailure();
+        }
+    };
 
     public SendMessagePresenter(LineApiClient lineApiClient, SendMessageContract.View view) {
         this.lineApiClient = lineApiClient;
@@ -38,9 +49,12 @@ public class SendMessagePresenter implements SendMessageContract.Presenter, Targ
 
     @Override
     public void sendMessage(MessageData messageData) {
-        List messageDataList = new ArrayList<MessageData>() {{ add(messageData); }};
-        // no need to put into asyncTask list since we don't need to handle results in foreground.
-        new SendMessageTask(lineApiClient, messageDataList).execute(targetUserList);
+        List messages = new ArrayList<MessageData>() {{
+            add(messageData);
+        }};
+        SendMessageTask sendMessageTask = new SendMessageTask(lineApiClient, messages, apiStatusListener);
+        asyncTaskList.add(sendMessageTask);
+        sendMessageTask.execute(targetUserList);
     }
 
     @Override

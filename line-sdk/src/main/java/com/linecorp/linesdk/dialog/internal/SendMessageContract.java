@@ -19,5 +19,7 @@ public interface SendMessageContract {
         void onTargetUserRemoved(TargetUser targetUser);
         void onTargetUserAdded(TargetUser targetUser);
         void onExceedMaxTargetUserCount(int count);
+        void onSendMessageSuccess();
+        void onSendMessageFailure();
     }
 }

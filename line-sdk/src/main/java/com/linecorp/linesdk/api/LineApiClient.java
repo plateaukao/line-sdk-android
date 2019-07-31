@@ -224,7 +224,7 @@ public interface LineApiClient {
 
     /**
      * @hide
-     * LINE internal use only. Sends messages to multiple users using user ids on behalf of the current
+     * LINE internal use only. Sends messages to multiple users using user IDs on behalf of the current
      * user. To know the message delivery result for each recipient, check the response data.
      * <p>
      * In the following cases, messages are not delivered even though the API call is successful.

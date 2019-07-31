@@ -1,5 +1,6 @@
 package com.linecorp.linesdktest;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,11 +19,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ApisFragment extends BaseApisFragment {
+public class ApisFragment extends BaseApisFragment implements SendMessageDialog.OnSendListener {
     private final FlexMessageGenerator flexMessageGenerator = new FlexMessageGenerator();
 
     @Nullable
-    @BindView(R.id.log) TextView logView;
+    @BindView(R.id.log)
+    TextView logView;
 
     @NonNull
     static ApisFragment newFragment(@NonNull TestSetting setting) {
@@ -80,8 +82,7 @@ public class ApisFragment extends BaseApisFragment {
     void sendMessage() {
         SendMessageDialog sendMessageDialog = new SendMessageDialog(getContext(), lineApiClient);
         sendMessageDialog.setMessageData(flexMessageGenerator.createFlexCarouselContainerMessage());
-        sendMessageDialog.setOnSendListener(
-                dialog -> Toast.makeText(getContext(), "Message is sent.", Toast.LENGTH_LONG).show());
+        sendMessageDialog.setOnSendListener(this);
         sendMessageDialog.setOnCancelListener(
                 dialog -> Toast.makeText(getContext(), "Sending message is canceled.", Toast.LENGTH_LONG).show());
         sendMessageDialog.show();
@@ -93,5 +94,15 @@ public class ApisFragment extends BaseApisFragment {
         if (logView != null) {
             logView.setText(logView.getText() + LOG_SEPARATOR + logText);
         }
+    }
+
+    @Override
+    public void onSendSuccess(DialogInterface dialog) {
+        Toast.makeText(getContext(), "Message sent successfully.", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onSendFailure(DialogInterface dialog) {
+        Toast.makeText(getContext(), "Message sent failure.", Toast.LENGTH_LONG).show();
     }
 }
