@@ -61,12 +61,6 @@
               android:text="@string/apis_get_friendship_status"
               android:textAllCaps="false" />
 
-            <Button
-                android:id="@+id/send_message"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/apis_send_message_with_picker"
-                android:textAllCaps="false" />
         </LinearLayout>
     </ScrollView>
 

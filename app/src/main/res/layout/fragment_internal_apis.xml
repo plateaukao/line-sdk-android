@@ -132,6 +132,12 @@
                 android:layout_height="wrap_content"
                 android:text="send ImageCarousel template message" />
 
+            <Button
+                android:id="@+id/send_message_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/apis_send_message_dialog" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

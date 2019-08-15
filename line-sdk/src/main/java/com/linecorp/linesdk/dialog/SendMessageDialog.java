@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
+ * @hide
  * A subclass of Dialog that shows the friend and group list for user to pick and send the
  * passed-in messageData. You can register a listener through
  * {@link #setOnSendListener(OnSendListener)} know whether the messageData is sent or not.
