@@ -224,8 +224,8 @@ public interface LineApiClient {
 
     /**
      * @hide
-     * LINE internal use only. Sends messages to multiple users on behalf of the current user. To
-     * know the message delivery result for each recipient, check the response data.
+     * LINE internal use only. Sends messages to multiple users using user IDs on behalf of the current
+     * user. To know the message delivery result for each recipient, check the response data.
      * <p>
      * In the following cases, messages are not delivered even though the API call is successful.
      * The response status is "discarded" for such API calls.
@@ -260,5 +260,47 @@ public interface LineApiClient {
     LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
             @NonNull List<String> targetUserIds,
             @NonNull List<MessageData> messages
+    );
+
+    /**
+     * Sends messages to multiple users on behalf of the current user.
+     * To know the message delivery result for each recipient, check the response data.
+     * <p>
+     * In the following cases, messages are not delivered even though the API call is successful.
+     * The response status is "discarded" for such API calls.
+     * <ul>
+     * <li>The recipient has blocked the current user.</li>
+     * <li>The recipient has turned off messages from the channel.</li>
+     * <li>The recipient hasn't authorized the channel to use their profile information and has
+     * turned off messages from unauthorized channels.</li>
+     * <li>The current user is not a friend of the recipient that is not a bot but a human.</li>
+     * </ul>
+     * <p>
+     * To call this method, you need a channel with the <code>MESSAGE</code> permission and an
+     * access token with the <code>message.write</code> scope.
+     *
+     * @param targetUserIds The IDs of the users that receive messages from the user. You can
+     *                      specify up to 10 users.
+     * @param messages      The messages to send. Available message types are: text, audio, image,
+     *                      location, video, and template. You can send up to five messages.
+     * @param isOttUsed     True if you want to send messages using OTT instead of using the user ids;
+     *                      false otherwise.
+     * @return A {@link LineApiResponse} object. If the API call is successful, the
+     * {@link LineApiResponse} object contains the {@link SendMessageResponse} objects that contain
+     * the delivery results. If the API call fails, the payload of the {@link LineApiResponse}
+     * object is <code>null</code>. The delivery result is either of the followings:
+     * <ul>
+     * <li><code>ok</code>: The messages have been delivered successfully.</li>
+     * <li><code>discarded</code>: The messages have been discarded because one of the conditions
+     * above is met or a server error occurred.
+     * </li>
+     * </ul>
+     * @see SendMessageResponse
+     */
+    @NonNull
+    LineApiResponse<List<SendMessageResponse>> sendMessageToMultipleUsers(
+            @NonNull List<String> targetUserIds,
+            @NonNull List<MessageData> messages,
+            boolean isOttUsed
     );
 }
