@@ -89,7 +89,6 @@ public interface LineApiClient {
     LineApiResponse<LineFriendshipStatus> getFriendshipStatus();
 
     // Graph API methods
-
     /**
      * @hide
      * LINE internal use only. Gets the user's friends who have authorized the channel to use their
@@ -107,13 +106,40 @@ public interface LineApiClient {
      * up to 200 friends of the user. The {@link GetFriendsResponse} object also contains a
      * continuation token if there are remaining friends that the original API call didn't return.
      * If the API call fails, the payload of the {@link LineApiResponse} object is
+     */
+    @NonNull
+    LineApiResponse<GetFriendsResponse> getFriends(
+            @NonNull FriendSortField sortField,
+            @Nullable String nextPageRequestToken
+    );
+
+    /**
+     * @hide
+     * LINE internal use only. Gets the user's friends who have authorized the channel to use their
+     * profile information or who have authorized LINE to use their profile information with the
+     * privacy filter setting.
+     * <p>
+     * To call this method, you need a channel with the <code>SOCIAL_GRAPH</code> permission and an
+     * access token with the <code>friends</code> scope.
+     *
+     * @param sortField            Optional. The way to sort the friend list. See the
+     *                             {@link FriendSortField} section for more information.
+     * @param nextPageRequestToken Optional. The continuation token to get the next friend list.
+     * @param isForOttShareMessage True if this API is called for sharing messages with OTT,
+     *                             false otherwise.
+     * @return A {@link LineApiResponse} object. If the API call is successful, the
+     * {@link LineApiResponse} object contains a {@link GetFriendsResponse} object that contains
+     * up to 200 friends of the user. The {@link GetFriendsResponse} object also contains a
+     * continuation token if there are remaining friends that the original API call didn't return.
+     * If the API call fails, the payload of the {@link LineApiResponse} object is
      * <code>null</code>.
      * @see FriendSortField
      */
     @NonNull
     LineApiResponse<GetFriendsResponse> getFriends(
             @NonNull FriendSortField sortField,
-            @Nullable String nextPageRequestToken
+            @Nullable String nextPageRequestToken,
+            boolean isForOttShareMessage
     );
 
     /**
@@ -158,6 +184,29 @@ public interface LineApiClient {
      */
     @NonNull
     LineApiResponse<GetGroupsResponse> getGroups(@Nullable String nextPageRequestToken);
+
+    /**
+     * @hide
+     * LINE internal use only. Gets groups that the user is a member of.
+     * <p>
+     * To call this method, you need a channel with the <code>SOCIAL_GRAPH</code> permission and an
+     * access token with the <code>groups</code> scope.
+     *
+     * @param nextPageRequestToken Optional. The continuation token to get the next group list.
+     * @param isForOttShareMessage True if this API is called for sharing messages with OTT,
+     *                             false otherwise.
+     * @return A {@link LineApiResponse} object. If the API call is successful, the
+     * {@link LineApiResponse} object contains a {@link GetGroupsResponse} object that contains
+     * up to 200 groups that the user is a member of. The {@link GetGroupsResponse} object also
+     * contains a continuation token if there are remaining groups that the original API call
+     * didn't return. If the API call fails, the payload of the {@link LineApiResponse} object is
+     * <code>null</code>.
+     */
+    @NonNull
+    LineApiResponse<GetGroupsResponse> getGroups(
+            @Nullable String nextPageRequestToken,
+            boolean isForOttShareMessage
+    );
 
     /**
      * @hide

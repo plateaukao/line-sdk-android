@@ -196,7 +196,7 @@ public class TalkApiClientTest {
     }
 
     @Test
-    public void testGetFriends() {
+    public void testGetFriends_shareMessageWithOtt() {
         doReturn(EXPECTED_RESULT).when(httpClient).get(
                 any(Uri.class),
                 anyMapOf(String.class, String.class),
@@ -204,7 +204,33 @@ public class TalkApiClientTest {
                 any(ResponseDataParser.class));
 
         LineApiResponse<GetFriendsResponse> actualResult =
-                target.getFriends(ACCESS_TOKEN, FriendSortField.NAME, "pageToken01");
+                target.getFriends(ACCESS_TOKEN, FriendSortField.NAME, "pageToken01", true);
+
+        assertSame(EXPECTED_RESULT, actualResult);
+
+        Map<String, String> expectedQueryParams = new HashMap<>();
+        expectedQueryParams.put("sort", "name");
+        expectedQueryParams.put("pageToken", "pageToken01");
+
+        verify(httpClient, times(1)).get(
+                eq(Uri.parse(API_BASE_URL + "/graph/v1/friends")),
+                eq(Collections.singletonMap("Authorization", "Bearer " + ACCESS_TOKEN.getAccessToken())),
+                eq(expectedQueryParams),
+                responseParserCaptor.capture());
+
+        assertTrue(responseParserCaptor.getValue() instanceof TalkApiClient.FriendsParser);
+    }
+
+    @Test
+    public void testGetFriends_notShareMessageWithOtt() {
+        doReturn(EXPECTED_RESULT).when(httpClient).get(
+                any(Uri.class),
+                anyMapOf(String.class, String.class),
+                anyMapOf(String.class, String.class),
+                any(ResponseDataParser.class));
+
+        LineApiResponse<GetFriendsResponse> actualResult =
+                target.getFriends(ACCESS_TOKEN, FriendSortField.NAME, "pageToken01", false);
 
         assertSame(EXPECTED_RESULT, actualResult);
 
@@ -248,7 +274,7 @@ public class TalkApiClientTest {
     }
 
     @Test
-    public void testGetGroups() {
+    public void testGetGroups_shareMessageWithOtt() {
         doReturn(EXPECTED_RESULT).when(httpClient).get(
                 any(Uri.class),
                 anyMapOf(String.class, String.class),
@@ -256,7 +282,32 @@ public class TalkApiClientTest {
                 any(ResponseDataParser.class));
 
         LineApiResponse<GetGroupsResponse> actualResult =
-                target.getGroups(ACCESS_TOKEN, "pageToken01");
+                target.getGroups(ACCESS_TOKEN, "pageToken01", true);
+
+        assertSame(EXPECTED_RESULT, actualResult);
+
+        Map<String, String> expectedQueryParams = new HashMap<>();
+        expectedQueryParams.put("pageToken", "pageToken01");
+
+        verify(httpClient, times(1)).get(
+                eq(Uri.parse(API_BASE_URL + "/graph/v1/groups")),
+                eq(Collections.singletonMap("Authorization", "Bearer " + ACCESS_TOKEN.getAccessToken())),
+                eq(expectedQueryParams),
+                responseParserCaptor.capture());
+
+        assertTrue(responseParserCaptor.getValue() instanceof TalkApiClient.GroupParser);
+    }
+
+    @Test
+    public void testGetGroups_notShareMessageWithOtt() {
+        doReturn(EXPECTED_RESULT).when(httpClient).get(
+                any(Uri.class),
+                anyMapOf(String.class, String.class),
+                anyMapOf(String.class, String.class),
+                any(ResponseDataParser.class));
+
+        LineApiResponse<GetGroupsResponse> actualResult =
+                target.getGroups(ACCESS_TOKEN, "pageToken01", false);
 
         assertSame(EXPECTED_RESULT, actualResult);
 

@@ -28,7 +28,7 @@ public class GetTargetUserTask extends AsyncTask<Void, List<TargetUser>, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
-        if(type == TargetUser.Type.FRIEND) {
+        if (type == TargetUser.Type.FRIEND) {
             getAllFriends();
         } else if (type == TargetUser.Type.GROUP) {
             getAllGroups();
@@ -45,7 +45,7 @@ public class GetTargetUserTask extends AsyncTask<Void, List<TargetUser>, Void> {
 
     @FunctionalInterface
     public interface NextAction {
-        void run(final  List<TargetUser> targetUserList);
+        void run(final List<TargetUser> targetUserList);
     }
 
     @NonNull
@@ -60,7 +60,7 @@ public class GetTargetUserTask extends AsyncTask<Void, List<TargetUser>, Void> {
     @NonNull
     private List<TargetUser> convertGroupsToTargetUsers(List<LineGroup> groups) {
         List<TargetUser> targetUsers = new ArrayList<>();
-        for (LineGroup group: groups) {
+        for (LineGroup group : groups) {
             targetUsers.add(TargetUser.createInstance(group));
         }
         return targetUsers;
@@ -69,7 +69,8 @@ public class GetTargetUserTask extends AsyncTask<Void, List<TargetUser>, Void> {
     private void getAllFriends() {
         String nextPageToken = "";
         while (nextPageToken != null) {
-            LineApiResponse<GetFriendsResponse> response = lineApiClient.getFriends(FriendSortField.RELATION, nextPageToken);
+            LineApiResponse<GetFriendsResponse> response =
+                    lineApiClient.getFriends(FriendSortField.RELATION, nextPageToken, true);
             if (!response.isSuccess()) {
                 publishProgress(Collections.emptyList());
                 return;
@@ -84,7 +85,8 @@ public class GetTargetUserTask extends AsyncTask<Void, List<TargetUser>, Void> {
     private void getAllGroups() {
         String nextPageToken = "";
         while (nextPageToken != null) {
-            LineApiResponse<GetGroupsResponse> response = lineApiClient.getGroups(nextPageToken);
+            LineApiResponse<GetGroupsResponse> response =
+                    lineApiClient.getGroups(nextPageToken, true);
             if (!response.isSuccess()) {
                 publishProgress(Collections.emptyList());
                 return;

@@ -47,7 +47,8 @@ public class TalkApiClient {
 
     private static final String BASE_PATH_COMMON_API = "v2";
     private static final String BASE_PATH_FRIENDSHIP_API = "friendship/v1";
-    private static final String BASE_PATH_GRAPH_API = "graph/v2";
+    private static final String BASE_PATH_GRAPH_API_V1 = "graph/v1";
+    private static final String BASE_PATH_GRAPH_API_V2 = "graph/v2";
     private static final String BASE_PATH_MESSAGE_API = "message/v3";
 
     private static final ResponseDataParser<LineProfile> PROFILE_PARSER = new ProfileParser();
@@ -106,9 +107,14 @@ public class TalkApiClient {
     public LineApiResponse<GetFriendsResponse> getFriends(
             @NonNull InternalAccessToken accessToken,
             @NonNull FriendSortField sortField,
-            @Nullable String pageToken
+            @Nullable String pageToken,
+            boolean isForOttShareMessage
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API, "friends");
+        // Due to backend API permission, use `graph/v1` instead of `graph/v2` if this API is called
+        // for sharing message with OTT.
+        final String newPathSegments =
+                (isForOttShareMessage) ? BASE_PATH_GRAPH_API_V1 : BASE_PATH_GRAPH_API_V2;
+        final Uri uri = buildUri(apiBaseUrl, newPathSegments, "friends");
         final Map<String, String> queryParams = buildParams(
                 "sort", sortField.getServerKey()
         );
@@ -125,14 +131,17 @@ public class TalkApiClient {
     @NonNull
     public LineApiResponse<GetGroupsResponse> getGroups(
             @NonNull InternalAccessToken accessToken,
-            @Nullable String pageToken
+            @Nullable String pageToken,
+            boolean isForOttShareMessage
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API, "groups");
+        // Due to backend API permission, use `graph/v1` instead of `graph/v2` if this API is called
+        // for sharing message with OTT.
+        final String newPathSegments =
+                (isForOttShareMessage) ? BASE_PATH_GRAPH_API_V1 : BASE_PATH_GRAPH_API_V2;
+        final Uri uri = buildUri(apiBaseUrl, newPathSegments, "groups");
         final Map<String, String> queryParams;
         if (!TextUtils.isEmpty(pageToken)) {
-            queryParams = buildParams(
-                    "pageToken", pageToken
-            );
+            queryParams = buildParams("pageToken", pageToken);
         } else {
             queryParams = Collections.emptyMap();
         }
@@ -149,8 +158,8 @@ public class TalkApiClient {
             @NonNull FriendSortField sortField,
             @Nullable String nextPageRequestToken
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API,
-                                 "friends", "approvers");
+        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API_V2,
+                "friends", "approvers");
         final Map<String, String> queryParams = buildParams(
                 "sort", sortField.getServerKey()
         );
@@ -171,8 +180,8 @@ public class TalkApiClient {
             @NonNull String groupId,
             @Nullable String nextPageRequestToken
     ) {
-        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API,
-                                 "groups", groupId, "approvers");
+        final Uri uri = buildUri(apiBaseUrl, BASE_PATH_GRAPH_API_V2,
+                "groups", groupId, "approvers");
 
         final Map<String, String> queryParams;
         if (!TextUtils.isEmpty(nextPageRequestToken)) {
