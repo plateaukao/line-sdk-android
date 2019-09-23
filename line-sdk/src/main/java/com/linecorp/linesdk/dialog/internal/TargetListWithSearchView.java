@@ -62,6 +62,7 @@ public class TargetListWithSearchView extends ConstraintLayout {
         recyclerView = layoutSelectTarget.findViewById(R.id.recyclerView);
         searchView = layoutSelectTarget.findViewById(R.id.searchView);
         emptyView = layoutSelectTarget.findViewById(R.id.emptyView);
+        emptyView.setText(R.string.search_no_results);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -81,8 +82,7 @@ public class TargetListWithSearchView extends ConstraintLayout {
                 TargetListAdapter adapter = ((TargetListAdapter)recyclerView.getAdapter());
                 if (adapter != null) {
                     int filteredCount = adapter.filter(query);
-                    if (filteredCount == 0) {
-                        emptyView.setText(R.string.search_no_results);
+                    if (filteredCount == 0 && !query.isEmpty()) {
                         emptyView.setVisibility(View.VISIBLE);
                     } else {
                         emptyView.setVisibility(View.INVISIBLE);
