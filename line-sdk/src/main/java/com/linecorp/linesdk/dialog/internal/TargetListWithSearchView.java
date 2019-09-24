@@ -1,6 +1,7 @@
 package com.linecorp.linesdk.dialog.internal;
 
 import android.content.Context;
+import android.support.annotation.StringRes;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
@@ -19,11 +20,15 @@ public class TargetListWithSearchView extends ConstraintLayout {
     private RecyclerView recyclerView;
     private SearchView searchView;
     private AppCompatTextView emptyView;
+    private int noMembersResId;
 
     public TargetListWithSearchView(
             Context context,
-            TargetListAdapter.OnSelectedChangeListener listener) {
+            @StringRes int noMembersResId,
+            TargetListAdapter.OnSelectedChangeListener listener
+    ) {
         super(context);
+        this.noMembersResId = noMembersResId;
         this.listener = listener;
         init();
     }
@@ -45,6 +50,11 @@ public class TargetListWithSearchView extends ConstraintLayout {
         } else {
             targetListAdapter.addAll(targetUsers);
         }
+
+        if (recyclerView.getAdapter().getItemCount() == 0) {
+            emptyView.setText(noMembersResId);
+            emptyView.setVisibility(View.VISIBLE);
+        }
     }
 
     public void unSelect(TargetUser targetUser) {
@@ -62,7 +72,6 @@ public class TargetListWithSearchView extends ConstraintLayout {
         recyclerView = layoutSelectTarget.findViewById(R.id.recyclerView);
         searchView = layoutSelectTarget.findViewById(R.id.searchView);
         emptyView = layoutSelectTarget.findViewById(R.id.emptyView);
-        emptyView.setText(R.string.search_no_results);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -82,8 +91,13 @@ public class TargetListWithSearchView extends ConstraintLayout {
                 TargetListAdapter adapter = ((TargetListAdapter)recyclerView.getAdapter());
                 if (adapter != null) {
                     int filteredCount = adapter.filter(query);
-                    if (filteredCount == 0 && !query.isEmpty()) {
+                    if (filteredCount == 0) {
                         emptyView.setVisibility(View.VISIBLE);
+                        if (!query.isEmpty()) {
+                            emptyView.setText(R.string.search_no_results);
+                        } else {
+                            emptyView.setText(noMembersResId);
+                        }
                     } else {
                         emptyView.setVisibility(View.INVISIBLE);
                     }
