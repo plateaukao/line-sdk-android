@@ -39,13 +39,15 @@ public class SendMessageTargetPagerAdapter extends PagerAdapter {
     @Override
     public View instantiateItem(@NonNull ViewGroup container, int position) {
         TargetUser.Type targetUserType = TargetUser.Type.values()[position];
-        TargetListWithSearchView view = new TargetListWithSearchView(context, listener);
+        TargetListWithSearchView view;
         switch (targetUserType) {
             case FRIEND: {
+                view = new TargetListWithSearchView(context, R.string.search_no_fiend, listener);
                 presenter.getFriends(view::addTargetUsers);
                 break;
             }
             case GROUP: {
+                view = new TargetListWithSearchView(context, R.string.search_no_group, listener);
                 presenter.getGroups(view::addTargetUsers);
                 break;
             }
