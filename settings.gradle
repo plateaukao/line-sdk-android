@@ -1,1 +1,1 @@
-include ':app', ':line-sdk'
+include ':app', ':line-sdk', 'unity-wrapper'
